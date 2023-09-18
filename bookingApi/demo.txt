@@ -1,0 +1,112 @@
+db.AutoMigrate(&models.Student{}, &models.Course{})
+	studentOne := models.Student {
+		StudentID: "ID-S001",
+        StudentName: "Abir",
+		StudentAge: 22,
+    }
+    studentTwo := models.Student {
+        StudentID: "ID-S002",
+        StudentName: "Amir",
+		StudentAge: 23,
+    }
+	studentThree := models.Student {
+        StudentID: "ID-S003",
+        StudentName: "Asif",
+		StudentAge: 24,
+    }
+    // Create students
+    db.Create(&studentOne)
+	db.Create(&studentTwo)
+    db.Create(&studentThree)
+	courseOne := models.Course {
+        CourseID: "ID-C001",
+		CourseName: "Course One",
+		CourseExams: pq.StringArray([]string{"exam 01", "exam 02", "exam 03"}),
+    }
+	courseTwo := models.Course {
+        CourseID: "ID-C002",
+		CourseName: "Course Two",
+		CourseExams: pq.StringArray([]string{"exam 04", "exam 05"}),
+    }
+    // Create courses
+    db.Create(&courseOne)
+	db.Create(&courseTwo)
+	// Append students
+    err = db.Model(&courseOne).Association("Students").Append([]models.Student{studentOne, studentTwo})
+    if err != nil {
+        fmt.Print(err)
+    }
+	err = db.Model(&courseTwo).Association("Students").Append([]models.Student{studentOne, studentThree})
+    if err != nil {
+        fmt.Print(err)
+    }
+	for _, course := range courseOne {
+        fmt.Println("Hello I am in the conversation: " + course.StudentName)
+    }
+	for _, convUser := range courseOne.Students {
+        fmt.Println("Hello I am in the conversation: " + convUser.StudentName)
+    }
+
+
+CREATE TABLE Hotel_Lists (  
+    Hotel_id VARCHAR(70) PRIMARY KEY,  
+    Hotel_name TEXT NOT NULL,
+	Hotel_image_url TEXT NOT NULL,
+	Hotel_price VARCHAR(10) NOT NULL
+);
+drop table Hotel_Lists;
+select * from Hotel_Lists;
+
+CREATE TABLE Hotel_Locations (
+    Location_id SERIAL PRIMARY KEY,
+    Location_name VARCHAR (70) NOT NULL,
+	Hotel_city TEXT NOT NULL,
+    Hotel_id VARCHAR (70) REFERENCES Hotel_Lists ON DELETE CASCADE
+);
+drop table Hotel_Locations;
+select * from Hotel_Locations;
+
+CREATE TABLE Hotel_Details (
+	Hotel_id VARCHAR (70) PRIMARY KEY REFERENCES Hotel_Lists ON DELETE CASCADE,
+	Hotel_name TEXT NOT NULL,
+	Hotel_city TEXT NOT NULL,
+	Hotel_review_count INT NOT NULL,
+	Hotel_rating INT NOT NULL,
+	Hotel_no_of_bed INT NOT NULL,
+	Hotel_amenities TEXT[] NOT NULL,
+	Hotel_description TEXT NOT NULL,
+	Hotel_image_urls TEXT[] NOT NULL
+);
+drop table Hotel_Details;
+select * from Hotel_Details;
+
+
+CREATE TABLE Hotel_Locations (
+    Location_id SERIAL PRIMARY KEY,
+    Location_name VARCHAR (70) NOT NULL
+);
+drop table Hotel_Locations;
+select * from Hotel_Locations;
+
+CREATE TABLE Hotel_Lists (  
+    Hotel_id VARCHAR(70) PRIMARY KEY,  
+    Hotel_name TEXT NOT NULL UNIQUE,
+	Hotel_city TEXT NOT NULL,
+	Hotel_image_url TEXT NOT NULL,
+	Hotel_price VARCHAR(10) NOT NULL,
+	Location_id INT UNIQUE REFERENCES Hotel_Locations (Location_id) ON UPDATE CASCADE ON DELETE CASCADE
+);
+drop table Hotel_Lists;
+select * from Hotel_Lists;
+
+CREATE TABLE Hotel_Details (
+	Hotel_id VARCHAR (70) PRIMARY KEY,
+	Hotel_review_count INT NOT NULL,
+	Hotel_rating INT NOT NULL,
+	Hotel_no_of_bed INT NOT NULL,
+	Hotel_amenities TEXT[] NOT NULL,
+	Hotel_description TEXT NOT NULL,
+	Hotel_image_urls TEXT[] NOT NULL
+);
+drop table Hotel_Details;
+select * from Hotel_Details;
