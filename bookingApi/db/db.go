@@ -2,14 +2,12 @@ package db
 
 import (
 	"bookingApi/models"
-	// _ "bookingApi/routers"
 	"fmt"
-	// "github.com/lib/pq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	// "gorm.io/gorm/logger"
 
 	beego "github.com/beego/beego/v2/server/web"
-	// "gorm.io/gorm/logger"
 )
 
 var Db *gorm.DB

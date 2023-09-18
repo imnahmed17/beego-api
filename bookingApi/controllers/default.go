@@ -1,15 +1,13 @@
 package controllers
 
 import (
-	// "bookingApi/main"
 	"bookingApi/db"
 	"bookingApi/models"
 	"encoding/json"
 	"fmt"
+	// "github.com/lib/pq"
 	"io"
 	"net/http"
-
-	// "gorm.io/gorm"
 
 	beego "github.com/beego/beego/v2/server/web"
 )
@@ -19,11 +17,11 @@ type MainController struct {
 }
 
 func (c *MainController) Get() {
+	dbIns := db.Db
+
 	location := c.GetString("location")
 	checkIn := c.GetString("t-start")
 	checkOut := c.GetString("t-end")
-	// db := main.Db 
-	dbIns := db.Db
 
 	if location == "" || checkIn == "" || checkOut == "" {
 		c.Data["Error"] = "Please Fill the all Required Field"
@@ -76,21 +74,36 @@ func (c *MainController) Get() {
 		extractedData := <- hotelDataChan
 		hotels :=  extractedData.Data
 		c.Data["Hotels"] = hotels
-		fmt.Println(len(hotels))
-
-		// for _, info := range hotels {
-		// 	fmt.Println("Title:", info.DisplayName.Text)
-		// }
 
 		if len(hotels) > 1 {
-			hotel_location := models.Hotel_Locations {
-				LocationName: location,
-			}
+			// var existingLocation models.Hotel_Locations
+			// if dbIns.Find(&existingLocation, "Location_name = ?", location).Error != nil {
+			// 	newLocation := models.Hotel_Locations {
+			// 		LocationName: location,
+			// 	}
+			// 	dbIns.Create(&newLocation)
+			// } else {
+			// 	fmt.Println("Location exists to the database")
+			// }
+			// fmt.Println(existingLocation.LocationID)
 
-			dbIns.Create(&hotel_location)
 			// for _, info := range hotels {
 			// 	fmt.Println("Title:", info.DisplayName.Text)
 			// }
+			var existingLocation models.Hotel_Locations
+			if err := dbIns.Where("Location_name = ?", location).First(&existingLocation).Error; err != nil {
+				// Location doesn't exist, add it to the database
+				newLocation := models.Hotel_Locations {
+					LocationName: location,
+				}
+				if err := dbIns.Create(&newLocation).Error; err != nil {
+					fmt.Println("Error creating location:", err)
+				} else {
+					fmt.Println("Location added to the database")
+				}
+			} else {
+				fmt.Println("Location exists in the database")
+			}
 		}
 	}
 
