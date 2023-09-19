@@ -16,7 +16,7 @@ type Hotel_Lists struct {
 	HotelImageUrl 	string 
 	HotelPrice 		string 
 	LocationID   	int 			
-	Hotel_Locations Hotel_Locations `gorm:"foreignKey:LocationID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;unique"`
+	Hotel_Locations Hotel_Locations `gorm:"foreignKey:LocationID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }
 
 type Hotel_Details struct {
@@ -65,5 +65,24 @@ type HotelData struct {
 				} `json:"amountPerStay"`
 			} `json:"displayPrice"`
 		} `json:"priceDisplayInfoIrene"`
+	} `json:"data"`
+}
+
+type HotelDetails struct {
+	Data struct {
+		GenericFacilityHighlight []struct {
+			Title string `json:"title"`
+		} `json:"GenericFacilityHighlight"`
+		HotelTranslation []struct {
+			Description string `json:"description"`
+		} `json:"HotelTranslation"`
+	} `json:"data"`
+}
+
+type HotelPhotos struct {
+	Data struct {
+		Photos []struct {
+			PhotoUri string `json:"photoUri"`
+		} `json:"photos"`
 	} `json:"data"`
 }

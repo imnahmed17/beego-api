@@ -94,7 +94,7 @@ CREATE TABLE Hotel_Lists (
 	Hotel_city TEXT NOT NULL,
 	Hotel_image_url TEXT NOT NULL,
 	Hotel_price VARCHAR(10) NOT NULL,
-	Location_id INT UNIQUE REFERENCES Hotel_Locations (Location_id) ON UPDATE CASCADE ON DELETE CASCADE
+	Location_id INT REFERENCES Hotel_Locations (Location_id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 drop table Hotel_Lists;
 select * from Hotel_Lists;

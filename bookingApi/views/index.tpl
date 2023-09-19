@@ -11,8 +11,9 @@
 
 <body>
   <header>
-    <h1 class="logo">Welcome to Beego</h1>
+    <h1>Welcome to Beego</h1>
     <form action="" method="get">
+      <label for="location">Location</label>
       <input type="text" name="location">
       <br>
       <div class="t-datepicker">
@@ -20,6 +21,8 @@
         <div class="t-check-out"></div>
       </div>
       <br><br><br>
+      <label for="page">Page No</label>
+      <input type="number" name="page">
       <input type="submit" value="search">
     </form>
   </header>

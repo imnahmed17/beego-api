@@ -12,6 +12,8 @@ import (
 
 var Db *gorm.DB
 var err error
+var RapidApikey string
+var RapidApihost string
 
 func Connect() {
 	dbHost, _ := beego.AppConfig.String("dbhost")
@@ -21,6 +23,8 @@ func Connect() {
 	dbName, _ := beego.AppConfig.String("dbname")
 	dbSslMode, _ := beego.AppConfig.String("dbsslmode")
 	dbTimeZone, _ := beego.AppConfig.String("dbtimezone")
+	RapidApikey, _ = beego.AppConfig.String("rapidapikey")
+	RapidApihost, _ = beego.AppConfig.String("rapidapihost")
 
 	dsn := "host=" + dbHost + " port=" + dbPort + " user=" + dbUser + " password=" + dbPass + " dbname=" + dbName + " sslmode=" + dbSslMode + " TimeZone=" + dbTimeZone
 	Db, err = gorm.Open(postgres.Open(dsn), &gorm.Config {
