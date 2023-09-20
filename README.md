@@ -84,5 +84,6 @@ To get RapidApi key and host browse [Booking.com API | RapidAPI](https://rapidap
 ```bash
 cd ..
 cd bookingApi
+go mod tidy
 bee run
 ```
