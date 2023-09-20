@@ -35,6 +35,7 @@ func (c *MainController) Get() {
 	CheckOut = checkOut
 	page := c.GetString("page")
 
+	// check whether the input fields are empty or not
 	if location == "" || checkIn == "" || checkOut == "" || page == "" {
 		c.Data["Error"] = "Please fill all the required fields"
 		fmt.Println("Please fill all the required fields")
@@ -51,6 +52,7 @@ func (c *MainController) Get() {
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
 			c.Data["Error"] = "Error creating request"
+			fmt.Println("Error creating request")
 			return
 		}
 
@@ -63,6 +65,7 @@ func (c *MainController) Get() {
 			res, err := http.DefaultClient.Do(req)
 			if err != nil {
 				c.Data["Error"] = "Error making the request"
+				fmt.Println("Error making the request")
 				hotelDataChan <- models.HotelData{}
 				return
 			}
@@ -71,6 +74,7 @@ func (c *MainController) Get() {
 			body, err := io.ReadAll(res.Body)
 			if err != nil {
 				c.Data["Error"] = "Error reading the response"
+				fmt.Println("Error reading the response")
 				hotelDataChan <- models.HotelData{}
 				return
 			}
@@ -78,6 +82,7 @@ func (c *MainController) Get() {
 			var allHotels models.HotelData
 			if err = json.Unmarshal(body, &allHotels); err != nil {
 				c.Data["Error"] = "Error parsing JSON response"
+				fmt.Println("Error parsing JSON response")
 				hotelDataChan <- models.HotelData{}
 				return
 			}
@@ -97,91 +102,171 @@ func (c *MainController) Get() {
 				LocationName: location,
 			}
 
-			err := dbIns.Where("Location_name = ?", location).First(&existingLocation).Error
-			if err != nil {
+			// check whether the entered location is already exists to the hotel_locations table or not
+			if err := dbIns.Where("Location_name = ?", location).First(&existingLocation).Error; err != nil {
 				if err := dbIns.Create(&newLocation).Error; err != nil {
-					fmt.Println("Error creating location:", err)
+					fmt.Println("Error creating new location:", err)
 				} else {
 					fmt.Println("Location added to the database")
+
+					for _, hotel := range hotels {
+						fmt.Println(hotel.IdDetail)
+
+						// fetch hotel details information
+						hotelDetailsInfo, err := GetHotelDetails(hotel.IdDetail)
+						if err != nil {
+							c.Data["Error"] = "Error fetching hotel details: " + err.Error()
+							return
+						}
+						hotelDetails := hotelDetailsInfo.Data
+						c.Data["HotelDetails"] = hotelDetails
+		
+						amenities := []string{}
+						for _, amenity := range hotelDetails.GenericFacilityHighlight {
+							amenities = append(amenities, amenity.Title)
+						}
+						hotelAmenities := pq.StringArray(amenities)
+		
+						// fetch hotel details photo
+						hotelDetailsPhotos, err := GetHotelPhotos(hotel.IdDetail)
+						if err != nil {
+							c.Data["Error"] = "Error fetching hotel details: " + err.Error()
+							return
+						}
+						hotelPhotos := hotelDetailsPhotos.Data.Photos
+						c.Data["HotelPhotos"] = hotelPhotos
+		
+						photos := []string{}
+						for _, photo := range hotelPhotos {
+							photos = append(photos, "https://cf.bstatic.com" + photo.PhotoUri)
+						}
+						hotelImageUrls := pq.StringArray(photos)
+		
+						if len(hotelDetails.HotelTranslation) > 0 {
+							hotelDescription = hotelDetails.HotelTranslation[0].Description
+						} else {
+							hotelDescription = ""
+						}
+						
+						newHotel := models.Hotel_Lists {
+							HotelID: hotel.IdDetail,
+							HotelName: hotel.DisplayName.Text,
+							HotelCity: hotel.BasicPropertyData.Location.City,
+							HotelImageUrl: "https://cf.bstatic.com" + hotel.BasicPropertyData.Photos.Main.HighResUrl.RelativeUrl,
+							HotelPrice: hotel.PriceDisplayInfoIrene.DisplayPrice.AmountPerStay.AmountRounded,
+							LocationID: newLocation.LocationID,
+						}
+						
+						newHotelDetails := models.Hotel_Details {
+							HotelID: hotel.IdDetail,
+							HotelReviewCount: hotel.BasicPropertyData.Reviews.ReviewsCount,
+							HotelRating: hotel.BasicPropertyData.StarRating.Value,
+							HotelNoOfBed: hotel.MatchingUnitConfigurations.CommonConfiguration.NbAllBeds,
+							HotelAmenities: hotelAmenities,
+							HotelDescription: hotelDescription,
+							HotelImageUrls: hotelImageUrls,
+						}
+		
+						// check whether the entered hotel id is already exists to the hotel_lists table or not
+						if err := dbIns.Where("Hotel_id = ?", newHotel.HotelID).First(&existingHotel).Error; err != nil {
+							if err := dbIns.Create(&newHotel).Error; err != nil {
+								fmt.Println("Error creating hotel list:", err)
+							} else {
+								fmt.Println("Hotel list added to the database")
+		
+								if err := dbIns.Create(&newHotelDetails).Error; err != nil {
+									fmt.Println("Error creating hotel details:", err)
+								} else {
+									fmt.Println("Hotel details added to the database")
+								}
+							}
+						} else {
+							fmt.Println("Hotel list already exists to the database")
+						}
+					}
 				}
 			} else {
 				fmt.Println("Location already exists to the database")
-			}
-			
-			for _, hotel := range hotels {
-				hotelDetailsInfo, err := GetHotelDetails(hotel.IdDetail)
-				if err != nil {
-					c.Data["Error"] = "Error fetching hotel details: " + err.Error()
-					return
-				}
-				hotelDetails := hotelDetailsInfo.Data
-				c.Data["HotelDetails"] = hotelDetails
 
-				amenities := []string{}
-				for _, amenity := range hotelDetails.GenericFacilityHighlight {
-					amenities = append(amenities, amenity.Title)
-				}
-				hotelAmenities := pq.StringArray(amenities)
-
-				hotelDetailsPhotos, err := GetHotelPhotos(hotel.IdDetail)
-				if err != nil {
-					c.Data["Error"] = "Error fetching hotel details: " + err.Error()
-					return
-				}
-				hotelPhotos := hotelDetailsPhotos.Data.Photos
-				c.Data["HotelPhotos"] = hotelPhotos
-
-				photos := []string{}
-				for _, photo := range hotelPhotos {
-					photos = append(photos, "https://cf.bstatic.com" + photo.PhotoUri)
-				}
-				hotelImageUrls := pq.StringArray(photos)
-
-				if len(hotelDetails.HotelTranslation) > 0 {
-					hotelDescription = hotelDetails.HotelTranslation[0].Description
-				}
-
-				newHotel := models.Hotel_Lists {
-					HotelID: hotel.IdDetail,
-					HotelName: hotel.DisplayName.Text,
-					HotelCity: hotel.BasicPropertyData.Location.City,
-					HotelImageUrl: "https://cf.bstatic.com" + hotel.BasicPropertyData.Photos.Main.HighResUrl.RelativeUrl,
-					HotelPrice: hotel.PriceDisplayInfoIrene.DisplayPrice.AmountPerStay.AmountRounded,
-					LocationID: existingLocation.LocationID,
-				}
-
-				fmt.Println(hotel.IdDetail)
-				newHotelDetails := models.Hotel_Details {
-					HotelID: hotel.IdDetail,
-					HotelReviewCount: hotel.BasicPropertyData.Reviews.ReviewsCount,
-					HotelRating: hotel.BasicPropertyData.StarRating.Value,
-					HotelNoOfBed: hotel.MatchingUnitConfigurations.CommonConfiguration.NbAllBeds,
-					HotelAmenities: hotelAmenities,
-					HotelDescription: hotelDescription,
-					HotelImageUrls: hotelImageUrls,
-				}
-
-				if err := dbIns.Where("Hotel_name = ?", newHotel.HotelName).First(&existingHotel).Error; err != nil {
-					if err := dbIns.Create(&newHotel).Error; err != nil {
-						fmt.Println("Error creating hotel list:", err)
-					} else {
-						fmt.Println("Hotel list added to the database")
-
-						if err := dbIns.Create(&newHotelDetails).Error; err != nil {
-							fmt.Println("Error creating hotel details:", err)
-						} else {
-							fmt.Println("Hotel details added to the database")
-						}
+				for _, hotel := range hotels {
+					fmt.Println(hotel.IdDetail)
+					
+					// fetch hotel details information
+					hotelDetailsInfo, err := GetHotelDetails(hotel.IdDetail)
+					if err != nil {
+						c.Data["Error"] = "Error fetching hotel details: " + err.Error()
+						return
 					}
-				} else {
-					fmt.Println("Hotel list already exists to the database")
+					hotelDetails := hotelDetailsInfo.Data
+					c.Data["HotelDetails"] = hotelDetails
+	
+					amenities := []string{}
+					for _, amenity := range hotelDetails.GenericFacilityHighlight {
+						amenities = append(amenities, amenity.Title)
+					}
+					hotelAmenities := pq.StringArray(amenities)
+	
+					// fetch hotel details photo
+					hotelDetailsPhotos, err := GetHotelPhotos(hotel.IdDetail)
+					if err != nil {
+						c.Data["Error"] = "Error fetching hotel details: " + err.Error()
+						return
+					}
+					hotelPhotos := hotelDetailsPhotos.Data.Photos
+					c.Data["HotelPhotos"] = hotelPhotos
+	
+					photos := []string{}
+					for _, photo := range hotelPhotos {
+						photos = append(photos, "https://cf.bstatic.com" + photo.PhotoUri)
+					}
+					hotelImageUrls := pq.StringArray(photos)
+	
+					if len(hotelDetails.HotelTranslation) > 0 {
+						hotelDescription = hotelDetails.HotelTranslation[0].Description
+					} else {
+						hotelDescription = ""
+					}
+					
+					newHotel := models.Hotel_Lists {
+						HotelID: hotel.IdDetail,
+						HotelName: hotel.DisplayName.Text,
+						HotelCity: hotel.BasicPropertyData.Location.City,
+						HotelImageUrl: "https://cf.bstatic.com" + hotel.BasicPropertyData.Photos.Main.HighResUrl.RelativeUrl,
+						HotelPrice: hotel.PriceDisplayInfoIrene.DisplayPrice.AmountPerStay.AmountRounded,
+						LocationID: existingLocation.LocationID,
+					}
+					
+					newHotelDetails := models.Hotel_Details {
+						HotelID: hotel.IdDetail,
+						HotelReviewCount: hotel.BasicPropertyData.Reviews.ReviewsCount,
+						HotelRating: hotel.BasicPropertyData.StarRating.Value,
+						HotelNoOfBed: hotel.MatchingUnitConfigurations.CommonConfiguration.NbAllBeds,
+						HotelAmenities: hotelAmenities,
+						HotelDescription: hotelDescription,
+						HotelImageUrls: hotelImageUrls,
+					}
+	
+					// check whether the entered hotel id is already exists to the hotel_lists table or not
+					if err := dbIns.Where("Hotel_id = ?", newHotel.HotelID).First(&existingHotel).Error; err != nil {
+						if err := dbIns.Create(&newHotel).Error; err != nil {
+							fmt.Println("Error creating hotel list:", err)
+						} else {
+							fmt.Println("Hotel list added to the database")
+	
+							if err := dbIns.Create(&newHotelDetails).Error; err != nil {
+								fmt.Println("Error creating hotel details:", err)
+							} else {
+								fmt.Println("Hotel details added to the database")
+							}
+						}
+					} else {
+						fmt.Println("Hotel list already exists to the database")
+					}
 				}
 			}
 		}
 	}
 
-	c.Data["Website"] = "beego.vip"
-	c.Data["Email"] = "astaxie@gmail.com"
 	c.TplName = "index.tpl"
 }
 
@@ -226,7 +311,7 @@ func GetHotelPhotos(id string) (models.HotelPhotos, error) {
 		"?id_detail=" + id +
 		"&language_code=en-us"
 
-	fmt.Println(url)
+	// fmt.Println(url)
 
     req, err := http.NewRequest("GET", url, nil)
     if err != nil {

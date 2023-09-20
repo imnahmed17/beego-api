@@ -10,31 +10,21 @@
 </head>
 
 <body>
-  <header>
-    <h1>Welcome to Beego</h1>
-    <form action="" method="get">
-      <label for="location">Location</label>
-      <input type="text" name="location">
-      <br>
-      <div class="t-datepicker">
-        <div class="t-check-in"></div>
-        <div class="t-check-out"></div>
-      </div>
-      <br><br><br>
-      <label for="page">Page No</label>
-      <input type="number" name="page">
-      <input type="submit" value="search">
-    </form>
-  </header>
-  <footer>
-    <div class="author">
-      Official website:
-      <a href="http://{{.Website}}">{{.Website}}</a> /
-      Contact me:
-      <a class="email" href="mailto:{{.Email}}">{{.Email}}</a>
+  <h1>Welcome to Beego</h1>
+  <form action="" method="get">
+    <label for="location">Location</label>
+    <input type="text" name="location">
+    <br>
+    <div class="t-datepicker">
+      <div class="t-check-in"></div>
+      <div class="t-check-out"></div>
     </div>
-  </footer>
-  <div class="backdrop"></div>
+    <br><br><br>
+    <label for="page">Page No</label>
+    <input type="number" name="page">
+    <input type="submit" value="search">
+  </form>
+  <br>
 
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="static/js/t-datepicker.min.js"></script>

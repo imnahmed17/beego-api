@@ -11,7 +11,7 @@ type Hotel_Locations struct {
 
 type Hotel_Lists struct {
 	HotelID 		string 			`gorm:"primaryKey"`
-    HotelName 		string 			`gorm:"unique"`
+    HotelName 		string 			
 	HotelCity 		string
 	HotelImageUrl 	string 
 	HotelPrice 		string 
