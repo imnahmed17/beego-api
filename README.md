@@ -64,7 +64,7 @@ CREATE TABLE Hotel_Details (
 
 **3. Project setup:**
 
-Create a `app.conf` file inside `conf` folder and add these below lines to `app.conf` file:
+Create a `conf` folder inside `bookingApi` folder as well as create a `app.conf` file inside `conf` folder (`bookingApi/conf/app.conf`). Now, add these below lines to `app.conf` file:
 ```bash
 appname = bookingApi
 httpport = 8080
