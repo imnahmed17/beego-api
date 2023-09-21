@@ -64,8 +64,12 @@ CREATE TABLE Hotel_Details (
 
 **3. Project setup:**
 
-Add these below lines to app.conf file:
+Create a `app.conf` file inside `conf` folder and add these below lines to `app.conf` file:
 ```bash
+appname = bookingApi
+httpport = 8080
+runmode = dev
+
 dbdriver = postgres
 dbhost = localhost
 dbport = 5432
