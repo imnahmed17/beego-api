@@ -14,7 +14,7 @@ type Hotel_Lists struct {
     HotelName 		string 			
 	HotelCity 		string
 	HotelImageUrl 	string 
-	HotelPrice 		string 
+	HotelPrice 		float64 
 	LocationID   	int 			
 	Hotel_Locations Hotel_Locations `gorm:"foreignKey:LocationID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }

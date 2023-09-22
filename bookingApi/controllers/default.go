@@ -8,6 +8,7 @@ import (
 	"github.com/lib/pq"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 
 	beego "github.com/beego/beego/v2/server/web"
@@ -63,6 +64,7 @@ func (c *MainController) Get() {
 
 		go func() {
 			res, err := http.DefaultClient.Do(req)
+			fmt.Println("location response", res)
 			if err != nil {
 				c.Data["Error"] = "Error making the request"
 				fmt.Println("Error making the request")
@@ -147,13 +149,19 @@ func (c *MainController) Get() {
 						} else {
 							hotelDescription = ""
 						}
-						
+
+						newPrice, err := strconv.ParseFloat(hotel.PriceDisplayInfoIrene.DisplayPrice.AmountPerStay.AmountRounded[1:], 64)
+						if err != nil {
+							c.Data["Error"] = "Error type convertion: " + err.Error()
+							return
+						}
+
 						newHotel := models.Hotel_Lists {
 							HotelID: hotel.IdDetail,
 							HotelName: hotel.DisplayName.Text,
 							HotelCity: hotel.BasicPropertyData.Location.City,
 							HotelImageUrl: "https://cf.bstatic.com" + hotel.BasicPropertyData.Photos.Main.HighResUrl.RelativeUrl,
-							HotelPrice: hotel.PriceDisplayInfoIrene.DisplayPrice.AmountPerStay.AmountRounded,
+							HotelPrice: newPrice,
 							LocationID: newLocation.LocationID,
 						}
 						
@@ -226,13 +234,19 @@ func (c *MainController) Get() {
 					} else {
 						hotelDescription = ""
 					}
+
+					newPrice, err := strconv.ParseFloat(hotel.PriceDisplayInfoIrene.DisplayPrice.AmountPerStay.AmountRounded[1:], 64)
+						if err != nil {
+							c.Data["Error"] = "Error type convertion: " + err.Error()
+							return
+						}
 					
 					newHotel := models.Hotel_Lists {
 						HotelID: hotel.IdDetail,
 						HotelName: hotel.DisplayName.Text,
 						HotelCity: hotel.BasicPropertyData.Location.City,
 						HotelImageUrl: "https://cf.bstatic.com" + hotel.BasicPropertyData.Photos.Main.HighResUrl.RelativeUrl,
-						HotelPrice: hotel.PriceDisplayInfoIrene.DisplayPrice.AmountPerStay.AmountRounded,
+						HotelPrice: newPrice,
 						LocationID: existingLocation.LocationID,
 					}
 					
@@ -288,6 +302,7 @@ func GetHotelDetails(id string) (models.HotelDetails, error) {
     req.Header.Add("X-RapidAPI-Host", rapidApiHost)
 
     res, err := http.DefaultClient.Do(req)
+	fmt.Println("details response", res)
     if err != nil {
         return models.HotelDetails{}, err
     }
@@ -322,6 +337,7 @@ func GetHotelPhotos(id string) (models.HotelPhotos, error) {
     req.Header.Add("X-RapidAPI-Host", rapidApiHost)
 
     res, err := http.DefaultClient.Do(req)
+	fmt.Println("photos response", res)
     if err != nil {
         return models.HotelPhotos{}, err
     }

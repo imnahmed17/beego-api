@@ -47,7 +47,7 @@ CREATE TABLE Hotel_Lists (
     Hotel_name TEXT NOT NULL,
 	Hotel_city TEXT NOT NULL,
 	Hotel_image_url TEXT NOT NULL,
-	Hotel_price VARCHAR(10) NOT NULL,
+	Hotel_price NUMERIC (10, 2) NOT NULL,
 	Location_id INT REFERENCES Hotel_Locations (Location_id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
