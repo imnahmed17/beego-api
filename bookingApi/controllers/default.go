@@ -19,6 +19,7 @@ var CheckOut string
 var rapidApiKey string
 var rapidApiHost string
 var hotelDescription string
+var hotelRating int
 
 type MainController struct {
 	beego.Controller
@@ -127,6 +128,10 @@ func (c *MainController) Get() {
 						for _, amenity := range hotelDetails.GenericFacilityHighlight {
 							amenities = append(amenities, amenity.Title)
 						}
+
+						if len(amenities) < 6 {
+							amenities = append(amenities, "Coffee Kit", "Tissue box", "Rollaway Tent", "Telephone", "Minibar", "Art collections")
+						}
 						hotelAmenities := pq.StringArray(amenities)
 		
 						// fetch hotel details photo
@@ -142,6 +147,10 @@ func (c *MainController) Get() {
 						for _, photo := range hotelPhotos {
 							photos = append(photos, "https://cf.bstatic.com" + photo.PhotoUri)
 						}
+
+						if len(photos) < 4 {
+							photos = append(photos, "https://cf.bstatic.com/xdata/images/hotel/max1024x768/332137919.jpg?k=ecf22540a1c09b5269ec8bd242ab0273752a3863bf10ca1e6c7f707650aefeae&o=", "https://cf.bstatic.com/xdata/images/hotel/max1024x768/332137920.jpg?k=c4525a6bac3abc546d10e2705cab215558ad782c3ad568c9f7117ecccfab324f&o=", "https://cf.bstatic.com/xdata/images/hotel/max1024x768/332137921.jpg?k=7161feb16385e35409f162b58b7f317603c871fa3750693c9d47b9b542aa78ef&o=", "https://cf.bstatic.com/xdata/images/hotel/max1024x768/332137922.jpg?k=e32c4c18d70f989fbe3d3171ebc388767e80646cf120ab00bc93c596ae83cc9d&o=", "https://cf.bstatic.com/xdata/images/hotel/max1024x768/332137923.jpg?k=0e473de0ae469ca9d6291cd2c288b480cf05397ff2eb2ad7b195645d7f508c93&o=")
+						}
 						hotelImageUrls := pq.StringArray(photos)
 		
 						if len(hotelDetails.HotelTranslation) > 0 {
@@ -156,6 +165,12 @@ func (c *MainController) Get() {
 							return
 						}
 
+						if hotel.BasicPropertyData.StarRating.Value < 1 {
+							hotelRating = 1
+						} else {
+							hotelRating = hotel.BasicPropertyData.StarRating.Value
+						}
+
 						newHotel := models.Hotel_Lists {
 							HotelID: hotel.IdDetail,
 							HotelName: hotel.DisplayName.Text,
@@ -168,7 +183,7 @@ func (c *MainController) Get() {
 						newHotelDetails := models.Hotel_Details {
 							HotelID: hotel.IdDetail,
 							HotelReviewCount: hotel.BasicPropertyData.Reviews.ReviewsCount,
-							HotelRating: hotel.BasicPropertyData.StarRating.Value,
+							HotelRating: hotelRating,
 							HotelNoOfBed: hotel.MatchingUnitConfigurations.CommonConfiguration.NbAllBeds,
 							HotelAmenities: hotelAmenities,
 							HotelDescription: hotelDescription,
