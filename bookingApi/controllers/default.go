@@ -167,6 +167,8 @@ func (c *MainController) Get() {
 
 						if hotel.BasicPropertyData.StarRating.Value < 1 {
 							hotelRating = 1
+						} else if hotel.BasicPropertyData.Reviews.ReviewsCount < 1 {
+							hotelRating = 0
 						} else {
 							hotelRating = hotel.BasicPropertyData.StarRating.Value
 						}
