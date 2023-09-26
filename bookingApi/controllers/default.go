@@ -7,9 +7,11 @@ import (
 	"fmt"
 	"github.com/lib/pq"
 	"io"
+	"math/rand"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	beego "github.com/beego/beego/v2/server/web"
 )
@@ -66,6 +68,7 @@ func (c *MainController) Get() {
 
 		go func() {
 			res, err := http.DefaultClient.Do(req)
+			fmt.Println(res)
 			if err != nil {
 				fmt.Println("Error making the request")
 				hotelDataChan <- []models.HotelData{}
@@ -237,6 +240,10 @@ func InsertHotelData (hotels []models.HotelData, location models.Hotel_Locations
 			return
 		}
 
+		propertyTypes := []string{"Appertment", "Cottage", "Hotel", "House", "Kabin", "Resort", "Villa"}
+		rand.Seed(time.Now().UnixNano())
+		randomIndex := rand.Intn(len(propertyTypes))
+
 		newHotel := models.Hotel_Lists {
 			HotelID: hotel.IdDetail,
 			HotelName: hotel.DisplayName.Text,
@@ -254,6 +261,7 @@ func InsertHotelData (hotels []models.HotelData, location models.Hotel_Locations
 			HotelAmenities: hotelAmenities,
 			HotelDescription: hotelDescription,
 			HotelImageUrls: hotelImageUrls,
+			HotelPropertyType: propertyTypes[randomIndex],
 		}
 
 		// check whether the entered hotel id is already exists to the hotel_lists table or not

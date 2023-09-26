@@ -20,13 +20,14 @@ type Hotel_Lists struct {
 }
 
 type Hotel_Details struct {
-	HotelID 	 	 string  		`gorm:"primaryKey"`
-	HotelReviewCount int 	 	
-	HotelRating 	 int 	 	
-	HotelNoOfBed   	 int      	
-	HotelAmenities   pq.StringArray `gorm:"type:text[]"`
-	HotelDescription string   	
-	HotelImageUrls   pq.StringArray `gorm:"type:text[]"`
+	HotelID 	 	  string  		 `gorm:"primaryKey"`
+	HotelReviewCount  int 	 	
+	HotelRating 	  int 	 	
+	HotelNoOfBed   	  int      	
+	HotelAmenities    pq.StringArray `gorm:"type:text[]"`
+	HotelDescription  string   	
+	HotelImageUrls    pq.StringArray `gorm:"type:text[]"`
+	HotelPropertyType string
 }
 
 type HotelData struct {

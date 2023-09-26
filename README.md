@@ -58,7 +58,8 @@ CREATE TABLE Hotel_Details (
 	Hotel_no_of_bed INT NOT NULL,
 	Hotel_amenities TEXT[] NOT NULL,
 	Hotel_description TEXT NOT NULL,
-	Hotel_image_urls TEXT[] NOT NULL
+	Hotel_image_urls TEXT[] NOT NULL,
+	Hotel_property_type VARCHAR (20)
 );
 ```
 
