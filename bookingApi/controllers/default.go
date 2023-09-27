@@ -174,7 +174,7 @@ func InsertHotelData (hotels []models.HotelData, location models.Hotel_Locations
 			photos = append(photos, "https://cf.bstatic.com" + photo.PhotoUri)
 		}
 
-		propertyTypes := []string{"Appertment", "Cottage", "Hotel", "House", "Kabin", "Resort", "Villa"}
+		propertyTypes := []string{"Apartment", "Cottage", "Hotel", "House", "Kabin", "Resort", "Villa"}
 		rand.Seed(time.Now().UnixNano())
 		randomIndex := rand.Intn(len(propertyTypes))
 		
